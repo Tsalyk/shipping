@@ -1,4 +1,5 @@
 import order_data, random
+orders_id = []
 
 class Order:
     """
@@ -6,18 +7,22 @@ class Order:
     """
 
     def __init__(self, user_name: str, city=None,
-                 postoffice=None, items=None, location=None):
+                 postoffice=None, items=None):
+        global orders_id
+
+        location = order_data.Location(city, postoffice)
+
+        rand_id = random.randint(100000000, 999999999)
+        while rand_id in orders_id:
+            rand_id = random.randint(100000000, 999999999)
+        orders_id.append(rand_id)
+
+        self.orderId = rand_id
         self.user_name = user_name
         self.items = items
-        self.orderId = random.randint(10000000, 999999999)
+        self.city = location.city
+        self.postoffice = location.postoffice
         self.vehicle = None
-
-        if location:
-            self.city = location.city
-            self.postoffice = location.postoffice
-        else:
-            self.city = city
-            self.postoffice = postoffice
 
         print(f"Your order number is {self.orderId}.")
 
@@ -47,7 +52,7 @@ class LogisticSystem:
     def placeOrder(self, order: Order):
         self.orders.append(order)
 
-        for vehicle in vehicles:
+        for vehicle in self.vehicles:
             if vehicle.isAvailable:
                 order.vehicle = vehicle.vehicleNo
                 vehicle.isAvailable = False
@@ -59,7 +64,7 @@ class LogisticSystem:
         order = list(filter(lambda element: element.orderId == orderId,
                             self.orders))
 
-        if order[0].vehicle:
+        if len(order) != 0 and order[0].vehicle:
             return order[0].__str__()
         else:
             return "No such order."
